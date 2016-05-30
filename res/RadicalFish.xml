@@ -46,16 +46,11 @@
     
     
     
-        <select name="button._select">
+        <select name="button.select">
             <alias ref="box.down" if="pressed" tint="#B2B2B2"/>
             <alias ref="box.down" if="selected" tint="#B2B2B2"/>
             <alias ref="box.high" border="3,4,4,5"/>
         </select>
-	<select name="button.select">
-            <alias ref="box.down" if="pressed" tint="#B2B2B2"/>
-            <alias ref="box.down" if="selected" tint="#B2B2B2"/>
-            <alias ref="box.high" border="8,10,10,11"/>
-	</select>
         <area name="edit.cursor" xywh="55,2,3,10" inset="0,1"/>
         <alias name="edit.selection" ref="white" tint="#80000000"/>
         <animation name="edit.cursor.animation" timeSource="hover">
@@ -325,7 +320,7 @@
     </images>
 
 
-    <fontDef name="normal" filename="font3.fnt" color="#FFFFFF" default="true" offsetX="0">
+    <fontDef name="normal" filename="font.fnt" color="#FFFFFF" default="true" offsetX="0">
         <fontParam if="error" color="red"/>
         <fontParam if="warning" color="orange"/>
         <fontParam if="textSelection" color="#FFFFFF"/>
@@ -346,14 +341,6 @@
 
 
     <inputMapDef name="-defaultInputMap">
-        <action name="selectAll">ctrl A</action>
-        <action name="selectAll">cmd A</action>
-        <action name="cut">ctrl X</action>
-        <action name="cut">cmd X</action>
-        <action name="copy">ctrl C</action>
-        <action name="copy">cmd C</action>
-        <action name="paste">ctrl V</action>
-        <action name="paste">cmd V</action>
     </inputMapDef>
 
 
@@ -930,6 +917,36 @@
         <param name="background"><image>box.border.bottom</image></param>
     </theme>
 
+    <theme name="statusbar" ref="buttonBox">
+        <param name="spacing"><int>3</int></param>
+        <param name="background"><image>box.border.bottom</image></param>
+        <theme name="button" ref="button">
+            <param name="border"><border>10,10,10,10</border></param>
+        </theme>
+        <theme name="label" ref="-default">
+            <param name="border"><border>10,10,10,10</border></param>
+            <param name="textAlignment"><enum type="alignment">center</enum></param>
+        </theme>
+        <theme name="sep" ref="label">
+            <param name="minWidth"><int>0</int></param>
+            <param name="border">
+                <border>10,0,0,0</border>
+            </param>
+        </theme>
+    </theme>
+
+    <theme name="pane" ref="statusbar">
+        <theme name="label" ref="label">
+            <param name="border"><border>0,0,0,0</border></param>
+        </theme>
+        <theme name="button" ref="button">
+            <param name="border"><border>0,0,0,0</border></param>
+        </theme>
+    </theme>
+
+    <theme name="songprogress" ref="progressbar">
+        <param name="minWidth"><int>300</int></param>
+    </theme>
 
 
     <theme name="previewwidgets" ref="-defaults">

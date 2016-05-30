@@ -15,6 +15,7 @@ public class Main {
             container.setTargetFrameRate(60);
             container.setVSync(true);
             container.setAlwaysRender(true);
+            container.setShowFPS(false);
             container.start();
         } catch (SlickException e) {
             e.printStackTrace();

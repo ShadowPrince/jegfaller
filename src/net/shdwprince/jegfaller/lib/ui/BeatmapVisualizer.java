@@ -30,25 +30,22 @@ public class BeatmapVisualizer {
     }
 
     public void render(Graphics graphics) {
-        graphics.setColor(Color.white);
-        graphics.drawLine(
-                this.position.getCenterX(),
-                this.position.getY(),
-                this.position.getCenterX(),
-                this.position.getY() + this.position.getHeight()
-        );
-
+        float minOffset = 1f;
         if (this.beatmap != null) {
             int index = 0;
             for (float start = this.beatmap.beatOffset; start < this.beatmap.totalLength; index++, start += this.beatmap.beatSize) {
                 float offset = this.musicPosition - start;
+                if (Math.abs(offset) < minOffset) {
+                    minOffset = Math.abs(offset);
+                }
+
                 float x = (this.position.getCenterX() - offset * this.scale);
 
                 if (x < this.position.getX() || x > this.position.getMaxX()) {
                     continue;
                 }
 
-                graphics.setColor(Color.white);
+                graphics.setColor(Color.gray);
                 float markerHeight = this.position.getHeight() / 2;
                 graphics.drawLine(x, this.position.getCenterY() - markerHeight / 2, x, this.position.getCenterY() + markerHeight / 2);
 
@@ -60,13 +57,32 @@ public class BeatmapVisualizer {
                         color = Color.white;
                     }
 
+                    color = new Color(color.r, color.g, color.b, 0.8f);
                     graphics.setColor(color);
                     graphics.fillArc(x - halfsize, this.position.getCenterY() - halfsize, halfsize * 2, halfsize * 2, 0, 360);
+                    graphics.setColor(Color.white);
+                    graphics.drawArc(x - halfsize, this.position.getCenterY() - halfsize, halfsize * 2, halfsize * 2, 0, 360);
                     graphics.setColor(Color.black);
-                    graphics.drawString(this.beatmap.stringNameOfAction(action), x - halfsize / 2, this.position.getCenterY() - graphics.getFont().getLineHeight() / 2);
+
+                    String actionStr = this.beatmap.stringNameOfAction(action);
+
+                    graphics.drawString(actionStr, x - graphics.getFont().getWidth(actionStr) / 2, this.position.getCenterY() - graphics.getFont().getLineHeight() / 2);
                 }
             }
         }
+
+        float width = 1.f;
+        if (minOffset < 0.1f) {
+            width = 3.f;
+        }
+
+        graphics.setColor(Color.white);
+        graphics.fillRect(
+                this.position.getCenterX() - width / 2,
+                this.position.getY(),
+                width,
+                this.position.getHeight()
+        );
     }
 
     public void overrideActionColor(int idx, Color c) {

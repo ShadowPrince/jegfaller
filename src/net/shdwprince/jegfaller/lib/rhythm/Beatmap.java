@@ -106,16 +106,12 @@ public class Beatmap implements Serializable {
 
     public String stringNameOfAction(int action) {
         switch (action) {
-            case 1: return "^";
+            case 1: return "/\\";
             case 2: return "\\/";
             case 3: return "<";
             case 4: return ">";
             default: return "";
         }
-    }
-
-    public String toString() {
-        return String.format("Offset - %f, Size - %f, Length - %f, Total beats - %d", this.beatOffset, this.beatSize, this.totalLength, this.actions != null ? this.actions.length : 0);
     }
 
     public void totalLengthFrom(Music music) {
@@ -126,7 +122,7 @@ public class Beatmap implements Serializable {
             field = audio.getClass().getDeclaredField("length");
             field.setAccessible(true);
 
-            this.totalLength = ((Float) field.get(audio)).floatValue();
+            this.totalLength = (Float) field.get(audio);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -134,7 +130,14 @@ public class Beatmap implements Serializable {
     }
 
     public void createActionsArray() {
-        int maxIndex = (int) Math.floor((float) (this.totalLength - this.beatOffset) / this.beatSize);
-        this.actions = new int[maxIndex+1];
+        int maxIndex = (int) Math.floor((this.totalLength - this.beatOffset) / this.beatSize);
+        if (this.actions == null) {
+            this.actions = new int[maxIndex + 1];
+        } else {
+            int[] oldActions = this.actions;
+            this.actions = new int[maxIndex + 1];
+
+            System.arraycopy(oldActions, 0, this.actions, 0, Integer.min(oldActions.length, this.actions.length));
+        }
     }
 }

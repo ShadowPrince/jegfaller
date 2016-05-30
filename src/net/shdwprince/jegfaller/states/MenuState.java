@@ -47,6 +47,7 @@ public class MenuState extends BasicTWLGameState {
 
         this.game = stateBasedGame;
         this.container = gameContainer;
+        this.lastLighting = System.currentTimeMillis();
     }
 
     @Override
