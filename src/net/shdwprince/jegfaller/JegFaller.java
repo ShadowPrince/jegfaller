@@ -39,6 +39,5 @@ public class JegFaller extends TWLStateBasedGame {
         this.addState(new MenuState());
         this.addState(new RhythmGameState());
         this.addState(new EditorGameState());
-        this.enterState(EDITOR);
     }
 }

@@ -91,11 +91,11 @@ public class RhythmGameState extends BasicTWLGameState implements BodyManager.Li
 
         this.pile = new Pile(new Rectangle(0, 0, this.cart.getWidth(), 400.f));
 
-        FireSprite.loadSingleFireSprites();
-        Entity fires = FireSprite.fireSpriteWithSize(100, 100);
+        //FireSprite.loadSingleFireSprites();
+        //Entity fires = FireSprite.fireSpriteWithSize(100, 100);
         Entity doctor = new Entity(new String[] {"assets/doctor.png", "assets/doctor_f2.png"}, 1);
         Entity horses = new Entity(new String[] {"assets/horses.png", "assets/horses_f2.png"}, 500);
-        this.followersManager.addEntity(fires, 0, -10);
+        //this.followersManager.addEntity(fires, 0, -10);
         this.followersManager.addEntity(horses, this.cart.getWidth(), -(horses.getHeight() - this.cart.getHeight()));
         this.followersManager.addEntity(doctor, this.cart.getWidth() + horses.getWidth() - 30.f, -(doctor.getHeight() - this.cart.getHeight()));
         this.followersManager.addEntity(this.pile, 0, -this.pile.getHeight() - this.cart.getHeight() + 90.f, false);
