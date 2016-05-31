@@ -72,7 +72,7 @@ public class RhythmGameState extends BasicTWLGameState implements BodyManager.Li
         Body.ROTATION_SPEED = 0.1f;
 
         BodyManager.SPAWN_INTERVAL = 8000;
-        BodyManager.DROP_INTERVAL = 3500;
+        BodyManager.DROP_INTERVAL = 5000;
 
         this.random = new Random();
         this.lightingShader =  ShaderProgram.loadProgram("assets/shader/a.vert", "assets/shader/a.frag");
@@ -90,8 +90,12 @@ public class RhythmGameState extends BasicTWLGameState implements BodyManager.Li
         this.followersManager = new FollowersManager();
 
         this.pile = new Pile(new Rectangle(0, 0, this.cart.getWidth(), 400.f));
+
+        FireSprite.loadSingleFireSprites();
+        Entity fires = FireSprite.fireSpriteWithSize(100, 100);
         Entity doctor = new Entity(new String[] {"assets/doctor.png", "assets/doctor_f2.png"}, 1);
         Entity horses = new Entity(new String[] {"assets/horses.png", "assets/horses_f2.png"}, 500);
+        this.followersManager.addEntity(fires, 0, -10);
         this.followersManager.addEntity(horses, this.cart.getWidth(), -(horses.getHeight() - this.cart.getHeight()));
         this.followersManager.addEntity(doctor, this.cart.getWidth() + horses.getWidth() - 30.f, -(doctor.getHeight() - this.cart.getHeight()));
         this.followersManager.addEntity(this.pile, 0, -this.pile.getHeight() - this.cart.getHeight() + 90.f, false);
@@ -157,8 +161,7 @@ public class RhythmGameState extends BasicTWLGameState implements BodyManager.Li
         }
 
         if (this.heat >= 100.f) {
-            this.heat = 0.f;
-            this.feverUntil = System.currentTimeMillis() + 10000;
+            this.performHeatHit();
         }
 
         if (System.currentTimeMillis() < this.feverUntil) {
@@ -288,6 +291,13 @@ public class RhythmGameState extends BasicTWLGameState implements BodyManager.Li
 
     protected void performThunderHit() {
         this.lightingUntil = System.currentTimeMillis() + 250;
+    }
+
+    protected void performHeatHit() {
+        this.heat = 0.f;
+        this.feverUntil = System.currentTimeMillis() + 10000;
+        this.lastThunderHit = System.currentTimeMillis();
+        this.lightingUntil = System.currentTimeMillis() + 400;
     }
 
     protected HitStatus hitStatus(Beatmap.Hit hit) {

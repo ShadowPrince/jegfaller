@@ -935,6 +935,13 @@
         </theme>
     </theme>
 
+    <theme name="mainMenuPane" ref="-default">
+        <param name="spacing"><int>20</int></param>
+        <theme name="button" ref="button">
+            <param name="border"><border>10,10,10,10</border></param>
+        </theme>
+    </theme>
+
     <theme name="pane" ref="statusbar">
         <theme name="label" ref="label">
             <param name="border"><border>0,0,0,0</border></param>

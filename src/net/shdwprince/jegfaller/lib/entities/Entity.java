@@ -1,6 +1,7 @@
 package net.shdwprince.jegfaller.lib.entities;
 
 import net.shdwprince.jegfaller.lib.Sprite;
+import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
 
 /**
@@ -11,11 +12,15 @@ public class Entity extends Sprite {
         super(refs, timeout);
     }
 
+    public Entity(Image[] imgs, int timeout) {
+        super(imgs, timeout);
+    }
+
     public Entity(String[] refs) throws SlickException {
         super(refs);
     }
 
-    public void update() throws SlickException{
+    public void update() throws SlickException {
 
     }
 }

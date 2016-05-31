@@ -52,6 +52,7 @@ public class MenuState extends BasicTWLGameState {
 
     @Override
     public void render(GameContainer gameContainer, StateBasedGame stateBasedGame, Graphics graphics) throws SlickException {
+        /*
         if (System.currentTimeMillis() - this.lastLighting > 10000) {
             this.lightingDuration = System.currentTimeMillis() + 300;
             this.lastLighting = System.currentTimeMillis();
@@ -66,6 +67,7 @@ public class MenuState extends BasicTWLGameState {
         graphics.drawImage(this.backgroundImage, 0, 0);
         graphics.drawImage(this.doctorImage, gameContainer.getWidth() - this.doctorImage.getWidth(), gameContainer.getHeight() - this.doctorImage.getHeight());
         graphics.drawImage(this.logoImage, 100, 200);
+        */
     }
 
     @Override
@@ -94,8 +96,7 @@ public class MenuState extends BasicTWLGameState {
         RootPane p = super.createRootPane();
         p.setTheme("");
         this.boxMenu = new BoxLayout(BoxLayout.Direction.HORIZONTAL);
-        this.boxMenu.setAlignment(Alignment.RIGHT);
-        this.boxMenu.setSpacing(100);
+        this.boxMenu.setTheme("mainMenuPane");
 
         Button openBeatmapButton = new Button("Open");
         openBeatmapButton.addCallback(this::openBeatmap);
@@ -115,7 +116,8 @@ public class MenuState extends BasicTWLGameState {
 
     @Override
     protected void layoutRootPane() {
-        this.boxMenu.setPosition(100, 400);
-        this.boxMenu.setSize(400, 50);
+        this.boxMenu.adjustSize();
+        this.boxMenu.setPosition(100 + this.logoImage.getWidth() / 2 - this.boxMenu.getWidth()/2, 200 + this.logoImage.getHeight() + 15);
+        this.boxMenu.setPosition(100, 100);
     }
 }

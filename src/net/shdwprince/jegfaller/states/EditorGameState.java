@@ -20,6 +20,7 @@ import java.util.Vector;
  * Created by sp on 5/27/16.
  */
 public class EditorGameState extends BasicTWLGameState {
+    protected StateBasedGame game;
     protected Image background;
     protected BeatmapVisualizer beatmapVisualizer;
 
@@ -40,9 +41,12 @@ public class EditorGameState extends BasicTWLGameState {
 
     @Override
     public void init(GameContainer gameContainer, StateBasedGame stateBasedGame) throws SlickException {
+        this.game = stateBasedGame;
+
         this.beatmapVisualizer = new BeatmapVisualizer(new Rectangle(0, 300, gameContainer.getWidth(), 200));
         this.background = new Image("assets/bg.png");
         this.background.setAlpha(0.5f);
+        this.bpmMeterBeats = new Vector<>();
     }
 
     @Override
@@ -63,7 +67,8 @@ public class EditorGameState extends BasicTWLGameState {
     @Override
     public void update(GameContainer gameContainer, StateBasedGame stateBasedGame, int skip) throws SlickException {
         Input i = gameContainer.getInput();
-        this.updateUI();
+        if (this.getRootPane() != null)
+            this.updateUI();
 
         switch (this.state) {
             case 0:
@@ -117,8 +122,10 @@ public class EditorGameState extends BasicTWLGameState {
         super.enter(gameContainer, stateBasedGame);
         gameContainer.getInput().enableKeyRepeat();
         this.state = -1;
+        this.music = null;
+        this.beatmap = null;
 
-        if (true) {
+        if (false) {
             try {
                 this.music = new Music("assets/Colors.jfb/music.ogg");
                 this.music.play();
@@ -126,7 +133,9 @@ public class EditorGameState extends BasicTWLGameState {
                 this.music.setVolume(0.3f);
                 this.beatmap = Beatmap.beatmapBasedOn("assets/Colors.jfb/beatmap.dat");
                 this.beatmapVisualizer.beatmap = this.beatmap;
-                this.state = 10;
+                this.beatmap.totalLengthFrom(this.music);
+
+                this.state = 0;
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new SlickException("failed to load beatmap");
@@ -137,8 +146,11 @@ public class EditorGameState extends BasicTWLGameState {
     @Override
     public void leave(GameContainer gameContainer, StateBasedGame stateBasedGame) throws SlickException {
         super.leave(gameContainer, stateBasedGame);
+        if (this.music != null) {
+            this.music.pause();
+            this.music = null;
+        }
     }
-
 
     private Label editorStatusLabel;
 
@@ -211,6 +223,12 @@ public class EditorGameState extends BasicTWLGameState {
 
         b = new Button("Save");
         b.addCallback(this::save);
+        this.statusbarPane.add(b);
+
+        b = new Button("Quit");
+        b.addCallback(() -> {
+            this.game.enterState(JegFaller.MAINMENU);
+        });
         this.statusbarPane.add(b);
 
         this.statusbarPane.setPosition(30, 30);
@@ -330,17 +348,19 @@ public class EditorGameState extends BasicTWLGameState {
                 this.beatmap.beatOffset = this.beatOffsetAdjuster.getValue();
                 this.beatmap.createActionsArray();
             }
+
+            this.playerControlProgress.setValue(this.musicPosition / this.beatmap.totalLength);
+            this.playerControlProgress.setText(String.format("%.2f / %.2f", this.musicPosition, this.beatmap.totalLength));
         }
 
         this.beatmapVisualizer.scale = this.visualizerScaleAdjuster.getValue();
 
-        this.playerControlProgress.setValue(this.musicPosition / this.beatmap.totalLength);
-        this.playerControlProgress.setText(String.format("%.2f / %.2f", this.musicPosition, this.beatmap.totalLength));
-
-        if (this.music.playing()) {
-            this.playerControlPlayPauseButton.setText("||");
-        } else {
-            this.playerControlPlayPauseButton.setText("l>");
+        if (this.music != null) {
+            if (this.music.playing()) {
+                this.playerControlPlayPauseButton.setText("||");
+            } else {
+                this.playerControlPlayPauseButton.setText("l>");
+            }
         }
 
         switch (this.state) {
@@ -424,7 +444,7 @@ public class EditorGameState extends BasicTWLGameState {
         }
     }
 
-    protected void calculateIntervals() {
+    protected void calculateIntervals2() {
         long count = 0;
         long intervalTotal = 0;
         long previous = 0;
@@ -443,8 +463,45 @@ public class EditorGameState extends BasicTWLGameState {
         this.beatmap.beatSize = (float) (intervalTotal/count) / 1000;
         this.beatmap.beatOffset = (float) offset / 1000;
 
-        System.out.format("Size %f, int %f", this.beatmap.beatSize, this.beatmap.beatOffset);
         this.beatmap.createActionsArray();
+    }
+
+    protected void calculateIntervals() {
+        long offset = this.bpmMeterBeats.firstElement() - this.bmpMusicStart;
+        Vector<Long> diffs = new Vector<>();
+        int checkedBeatsLength = 4;
+
+        int minDiffIdx = -1;
+        float minDiff = 100;
+
+        for (int i = 1; i < this.bpmMeterBeats.size(); i++) {
+            float beatMaxDiff = 0;
+            for (int check = 1; check < checkedBeatsLength; check++) {
+                float diff = 0;
+                try {
+                    diff = Math.abs(this.bpmMeterBeatSizeAt(i) - this.bpmMeterBeatSizeAt(i + check));
+                } catch (ArrayIndexOutOfBoundsException ex) {
+                    diff = 100;
+                }
+
+                if (diff > beatMaxDiff) {
+                    beatMaxDiff = diff;
+                }
+            }
+
+            if (minDiff > beatMaxDiff) {
+                minDiff = beatMaxDiff;
+                minDiffIdx = i;
+            }
+        }
+
+        this.beatmap.beatSize = this.bpmMeterBeatSizeAt(minDiffIdx) / 1000;
+        this.beatmap.beatOffset = (float) offset / 1000;
+        this.beatmap.createActionsArray();
+    }
+
+    protected float bpmMeterBeatSizeAt(int i) {
+        return (float) (this.bpmMeterBeats.elementAt(i) - this.bpmMeterBeats.elementAt(i-1));
     }
 
     protected void insertAction(int action) {

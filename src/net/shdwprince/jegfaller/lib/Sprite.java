@@ -29,6 +29,10 @@ public class Sprite {
         this(refs, Integer.MAX_VALUE);
     }
 
+    public Sprite(Image[] imgs, int timeout) {
+        this.anim = new Animation(imgs, timeout);
+    }
+
     public void draw(Graphics g) {
         if (this.anim.getFrameCount() > 0) {
             this.anim.getCurrentFrame().rotate(this.rotation);
