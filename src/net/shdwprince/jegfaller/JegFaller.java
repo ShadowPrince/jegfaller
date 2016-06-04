@@ -39,5 +39,8 @@ public class JegFaller extends TWLStateBasedGame {
         this.addState(new MenuState());
         this.addState(new RhythmGameState());
         this.addState(new EditorGameState());
+
+        ((RhythmGameState) this.getState(RHYTHMGAME)).beatmapFile = new File("assets/Colors.jfb/beatmap.dat");
+        this.enterState(RHYTHMGAME);
     }
 }

@@ -15,8 +15,6 @@ public class Cart extends Entity {
     protected float speed;
     protected float bump;
 
-    public static float BUMP, SLOWDOWN, MAX_SPEED, MIN_SPEED;
-
     public Cart(float x, float y) throws SlickException {
         super(new String[]{"assets/cart.png", "assets/cart_f2.png"}, 300);
 
@@ -25,15 +23,15 @@ public class Cart extends Entity {
     }
 
     public void update() {
-        this.bump = this.bump > MAX_SPEED * 4 ? MAX_SPEED * 4 : this.bump;
+        this.bump = this.bump > RhythmGameSettings.currentSettings().CartMaxSpeed * 4 ? RhythmGameSettings.currentSettings().CartMaxSpeed * 4 : this.bump;
         if (this.bump > 0) {
             this.bump -= 0.3f;
             this.speed += 0.3f;
         }
 
-        this.speed -= SLOWDOWN;
-        this.speed = this.speed < MIN_SPEED ? MIN_SPEED : this.speed;
-        this.speed = this.speed > MAX_SPEED ? MAX_SPEED : this.speed;
+        this.speed -= RhythmGameSettings.currentSettings().CartSlowdown;
+        this.speed = this.speed < RhythmGameSettings.currentSettings().CartMinSpeed ? RhythmGameSettings.currentSettings().CartMinSpeed : this.speed;
+        this.speed = this.speed > RhythmGameSettings.currentSettings().CartMaxSpeed ? RhythmGameSettings.currentSettings().CartMaxSpeed : this.speed;
 
         this.x += this.speed;
     }
@@ -54,14 +52,14 @@ public class Cart extends Entity {
     }
 
     public void bump() {
-        this.bump += BUMP;
+        this.bump += RhythmGameSettings.currentSettings().CartBumpAmount;
     }
 
     public void missedBumpBreak() {
-        this.speed = MIN_SPEED;
+        this.speed = RhythmGameSettings.currentSettings().CartMinSpeed;
     }
 
     public void missedBumpSpeedup() {
-        this.speed = MAX_SPEED;
+        this.speed = RhythmGameSettings.currentSettings().CartMaxSpeed;
     }
 }

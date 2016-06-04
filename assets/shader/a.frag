@@ -8,9 +8,9 @@ void main() {
 	float tresh = 0.1;
 	float diff = 0.0;
 	if (c.r > tresh && c.g > tresh && c.b > tresh) {
-	    diff = +0.25;
+	    diff = +0.5;
 	} else {
-	    diff = -0.1;
+	    diff = -0.5;
 	}
 
     gl_FragColor = vec4(c.rgb + diff, c.a);

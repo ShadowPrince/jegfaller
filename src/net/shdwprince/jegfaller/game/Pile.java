@@ -1,8 +1,6 @@
 package net.shdwprince.jegfaller.game;
 
-import net.shdwprince.jegfaller.lib.Sprite;
 import net.shdwprince.jegfaller.lib.entities.Entity;
-import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;

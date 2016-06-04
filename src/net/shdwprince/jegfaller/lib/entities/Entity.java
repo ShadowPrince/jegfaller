@@ -1,6 +1,5 @@
 package net.shdwprince.jegfaller.lib.entities;
 
-import net.shdwprince.jegfaller.lib.Sprite;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
 

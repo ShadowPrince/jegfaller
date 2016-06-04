@@ -1,19 +1,14 @@
 package net.shdwprince.jegfaller.states;
 
-import com.sun.tools.hat.internal.model.Root;
 import de.matthiasmann.twl.*;
 import it.twl.util.BasicTWLGameState;
 import it.twl.util.RootPane;
-import jdk.nashorn.internal.runtime.JSErrorType;
 import net.shdwprince.jegfaller.JegFaller;
-import net.shdwprince.jegfaller.lib.ShaderProgram;
+import net.shdwprince.jegfaller.lib.util.ShaderProgram;
 import net.shdwprince.jegfaller.lib.ui.UIHelper;
 import org.newdawn.slick.*;
 import org.newdawn.slick.Color;
-import org.newdawn.slick.state.BasicGameState;
-import org.newdawn.slick.state.GameState;
 import org.newdawn.slick.state.StateBasedGame;
-import sun.font.BidiUtils;
 
 import java.io.File;
 
@@ -42,7 +37,7 @@ public class MenuState extends BasicTWLGameState {
 
         this.shader = ShaderProgram.loadProgram("assets/shader/a.vert", "assets/shader/a.frag");
         this.shader.bind();
-        this.shader.setUniform1i("tex0", 0); //texture 0
+        this.shader.setUniform1i("tex0", 0);
         this.shader.unbind();
 
         this.game = stateBasedGame;
@@ -52,7 +47,6 @@ public class MenuState extends BasicTWLGameState {
 
     @Override
     public void render(GameContainer gameContainer, StateBasedGame stateBasedGame, Graphics graphics) throws SlickException {
-        /*
         if (System.currentTimeMillis() - this.lastLighting > 10000) {
             this.lightingDuration = System.currentTimeMillis() + 300;
             this.lastLighting = System.currentTimeMillis();
@@ -67,7 +61,6 @@ public class MenuState extends BasicTWLGameState {
         graphics.drawImage(this.backgroundImage, 0, 0);
         graphics.drawImage(this.doctorImage, gameContainer.getWidth() - this.doctorImage.getWidth(), gameContainer.getHeight() - this.doctorImage.getHeight());
         graphics.drawImage(this.logoImage, 100, 200);
-        */
     }
 
     @Override
@@ -118,6 +111,10 @@ public class MenuState extends BasicTWLGameState {
     protected void layoutRootPane() {
         this.boxMenu.adjustSize();
         this.boxMenu.setPosition(100 + this.logoImage.getWidth() / 2 - this.boxMenu.getWidth()/2, 200 + this.logoImage.getHeight() + 15);
-        this.boxMenu.setPosition(100, 100);
+    }
+
+    @Override
+    public void enter(GameContainer container, StateBasedGame game) throws SlickException {
+        super.enter(container, game);
     }
 }

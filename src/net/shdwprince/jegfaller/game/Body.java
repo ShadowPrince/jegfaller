@@ -9,7 +9,6 @@ import org.newdawn.slick.geom.RoundedRectangle;
  * Created by sp on 5/22/16.
  */
 public class Body extends Entity {
-    public static float GRAVITY, ROTATION_SPEED;
     protected float speed;
 
     public Body(float x, float y) throws SlickException {
@@ -23,10 +22,10 @@ public class Body extends Entity {
     public void update() throws SlickException {
         super.update();
 
-        this.rotation += ROTATION_SPEED;
+        this.rotation += RhythmGameSettings.currentSettings().BodyRotationSpeed;
         this.rotation = this.rotation > 1 ? this.rotation - 1 : this.rotation;
 
-        this.speed += GRAVITY;
+        this.speed += RhythmGameSettings.currentSettings().BodyGravity;
         this.y += this.speed;
     }
 }

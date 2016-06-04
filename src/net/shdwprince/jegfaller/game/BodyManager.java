@@ -1,14 +1,11 @@
 package net.shdwprince.jegfaller.game;
 
-import javafx.scene.control.Alert;
-import net.shdwprince.jegfaller.lib.Background;
+import net.shdwprince.jegfaller.lib.ui.Background;
 import net.shdwprince.jegfaller.lib.entities.Entity;
 import net.shdwprince.jegfaller.lib.entities.EntityManager;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Rectangle;
-import org.w3c.dom.css.Rect;
 
-import java.util.Random;
 import java.util.Vector;
 
 /**
@@ -61,7 +58,7 @@ public class BodyManager extends EntityManager {
         if (System.currentTimeMillis() - this.lastSpawn > BodyManager.SPAWN_INTERVAL) {
             Vector<Rectangle> rectangles = new Vector<>();
             for (Rectangle r : this.background.getHousesRectangles()) {
-                if (r.getWidth() > 400.f) {
+                if (r.getWidth() > 450.f) {
                     rectangles.add(r);
                 }
             }
@@ -102,8 +99,10 @@ public class BodyManager extends EntityManager {
         }
 
         for (Entity collidedEntity : this.entitiesCollidedWith(this.pile)) {
-            this.listener.bodyCollision((Body) collidedEntity);
-            this.destroyEntity(collidedEntity);
+            if (collidedEntity instanceof Body) {
+                this.listener.bodyCollision((Body) collidedEntity);
+                this.destroyEntity(collidedEntity);
+            }
         }
     }
 }
