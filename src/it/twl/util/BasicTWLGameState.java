@@ -87,7 +87,8 @@ public abstract class BasicTWLGameState extends BasicGameState {
 	@Override
 	public void enter(GameContainer container, StateBasedGame game)
 			throws SlickException {
-		((TWLStateBasedGame) game).setRootPane(getRootPane());
+        System.out.format("game %s, rp %s dis %s\n", (TWLStateBasedGame) game, getRootPane(), this);
+        ((TWLStateBasedGame) game).setRootPane(getRootPane());
 	}
 
 	/**

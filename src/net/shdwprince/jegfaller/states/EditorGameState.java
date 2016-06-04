@@ -1,9 +1,11 @@
 package net.shdwprince.jegfaller.states;
 
 import de.matthiasmann.twl.*;
+import de.matthiasmann.twl.BoxLayout;
 import it.twl.util.BasicTWLGameState;
 import it.twl.util.RootPane;
 import net.shdwprince.jegfaller.JegFaller;
+import net.shdwprince.jegfaller.game.RhythmGameSettings;
 import net.shdwprince.jegfaller.lib.rhythm.Beatmap;
 import net.shdwprince.jegfaller.lib.ui.BeatmapVisualizer;
 import net.shdwprince.jegfaller.lib.ui.MusicProgressVisualizer;
@@ -13,7 +15,11 @@ import org.newdawn.slick.Color;
 import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.state.StateBasedGame;
 
+import javax.swing.*;
 import java.io.File;
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 /**
@@ -25,6 +31,7 @@ public class EditorGameState extends BasicTWLGameState {
     protected BeatmapVisualizer beatmapVisualizer;
 
     protected File beatmapFile;
+    protected RhythmGameSettings settings;
     protected Beatmap beatmap;
     protected Music music;
     protected float musicPosition;
@@ -42,6 +49,8 @@ public class EditorGameState extends BasicTWLGameState {
     @Override
     public void init(GameContainer gameContainer, StateBasedGame stateBasedGame) throws SlickException {
         this.game = stateBasedGame;
+        RhythmGameSettings.instantiateDefaultSettings();
+        this.settings = RhythmGameSettings.currentSettings();
 
         this.beatmapVisualizer = new BeatmapVisualizer(new Rectangle(0, 300, gameContainer.getWidth(), 200));
         this.background = new Image("assets/bg.png");
@@ -124,6 +133,7 @@ public class EditorGameState extends BasicTWLGameState {
         this.state = -1;
         this.music = null;
         this.beatmap = null;
+        this.resetUI();
 
         if (false) {
             try {
@@ -146,6 +156,8 @@ public class EditorGameState extends BasicTWLGameState {
     @Override
     public void leave(GameContainer gameContainer, StateBasedGame stateBasedGame) throws SlickException {
         super.leave(gameContainer, stateBasedGame);
+        this.gameSettingsPane.setVisible(false);
+
         if (this.music != null) {
             this.music.pause();
             this.music = null;
@@ -161,6 +173,8 @@ public class EditorGameState extends BasicTWLGameState {
     private Label beatmapStatsLabel;
 
     private BoxLayout statusbarPane, playerControlPane, composerHelperPane, bmpHelperPane;
+    private HashMap<Field, ValueAdjuster> gameSettingsAdjusters;
+    private ScrollPane gameSettingsPane;
 
     @Override
     protected RootPane createRootPane() {
@@ -173,11 +187,13 @@ public class EditorGameState extends BasicTWLGameState {
         this.createPlayerControl();
         this.createBmpHelperPane();
         this.createComposerHelperPane();
+        this.createGameSettingsPane();
 
         p.add(this.statusbarPane);
         p.add(this.playerControlPane);
         p.add(this.composerHelperPane);
         p.add(this.bmpHelperPane);
+        p.add(this.gameSettingsPane);
 
         this.setNoKeyboard(p);
         p.setCanAcceptKeyboardFocus(true);
@@ -204,6 +220,9 @@ public class EditorGameState extends BasicTWLGameState {
         this.bmpHelperPane.adjustSize();
         this.composerHelperPane.setPosition(0, this.bmpHelperPane.getHeight() + this.bmpHelperPane.getY());
         this.composerHelperPane.adjustSize();
+
+        this.gameSettingsPane.setSize(500, 300);
+        this.gameSettingsPane.setPosition(0, 768 - this.gameSettingsPane.getHeight());
     }
 
     protected void createStatusbar() {
@@ -223,6 +242,12 @@ public class EditorGameState extends BasicTWLGameState {
 
         b = new Button("Save");
         b.addCallback(this::save);
+        this.statusbarPane.add(b);
+
+        b = new Button("Game settings");
+        b.addCallback(() -> {
+            this.gameSettingsPane.setVisible(!this.gameSettingsPane.isVisible());
+        });
         this.statusbarPane.add(b);
 
         b = new Button("Quit");
@@ -328,6 +353,56 @@ public class EditorGameState extends BasicTWLGameState {
         this.bmpHelperPane.add(this.beatmapStatsLabel);
     }
 
+    protected void createGameSettingsPane() {
+        this.gameSettingsPane = new ScrollPane();
+        this.gameSettingsPane.setVisible(false);
+        BoxLayout box = new BoxLayout(BoxLayout.Direction.VERTICAL);
+        this.gameSettingsPane.setContent(box);
+
+        BoxLayout buttonsBox = new BoxLayout(BoxLayout.Direction.HORIZONTAL);
+        Button saveButton = new Button("Save");
+        saveButton.addCallback(this::saveSettings);
+
+        Button defaultsButton = new Button("Reset to default");
+        defaultsButton.addCallback(this::resetSettings);
+        buttonsBox.add(saveButton);
+        buttonsBox.add(defaultsButton);
+        box.add(buttonsBox);
+
+        this.gameSettingsAdjusters = new HashMap<>();
+
+        for (Field f : RhythmGameSettings.serializationFields()) {
+            try {
+                ValueAdjuster adjuster = null;
+                if (f.getType() == float.class) {
+                    ValueAdjusterFloat a = new ValueAdjusterFloat();
+                    a.setMinMaxValue(-10000.f, 10000.f);
+                    a.setValue(f.getFloat(this.settings));
+
+                    adjuster = a;
+                } else if (f.getType() == int.class) {
+                    ValueAdjusterInt a = new ValueAdjusterInt();
+                    a.setMinMaxValue(-10000, 10000);
+                    a.setValue(f.getInt(this.settings));
+
+                    adjuster = a;
+                }
+
+                this.gameSettingsAdjusters.put(f, adjuster);
+
+                BoxLayout itemBox = new BoxLayout(BoxLayout.Direction.HORIZONTAL);
+                itemBox.add(new Label(f.getName()));
+                itemBox.add(adjuster);
+                box.add(itemBox);
+            } catch (IllegalAccessException e) {
+                System.out.printf("Failed to add %s: %s", f, e);
+                e.printStackTrace();
+            }
+        }
+
+        box.adjustSize();
+    }
+
     protected void updateUI() {
         this.composerHelperPane.adjustSize();
         this.bmpHelperPane.adjustSize();
@@ -379,9 +454,45 @@ public class EditorGameState extends BasicTWLGameState {
         }
     }
 
+    protected void saveSettings() {
+        for (Map.Entry<Field, ValueAdjuster> e : this.gameSettingsAdjusters.entrySet()) {
+            try {
+                Object value = null;
+                if (e.getValue() instanceof ValueAdjusterFloat) {
+                    value = ((ValueAdjusterFloat) e.getValue()).getValue();
+                } else if (e.getValue() instanceof ValueAdjusterInt) {
+                    value = ((ValueAdjusterInt) e.getValue()).getValue();
+                }
+
+                e.getKey().set(this.settings, value);
+            } catch (IllegalAccessException ex) {
+                System.out.printf("Failed to reset game param %s: %s\n", e.getKey(), ex);
+            }
+        }
+    }
+
+    protected void resetSettings() {
+        RhythmGameSettings.instantiateDefaultSettings();
+        this.settings = RhythmGameSettings.currentSettings();
+
+        this.resetUI();
+    }
+
     protected void resetUI() {
         this.beatOffsetAdjuster.setValue(0.f);
         this.bmpAdjuster.setValue(0.001f);
+
+        for (Map.Entry<Field, ValueAdjuster> e : this.gameSettingsAdjusters.entrySet()) {
+            try {
+                if (e.getValue() instanceof ValueAdjusterFloat) {
+                    ((ValueAdjusterFloat) e.getValue()).setValue(e.getKey().getFloat(this.settings));
+                } else if (e.getValue() instanceof ValueAdjusterInt) {
+                    ((ValueAdjusterInt) e.getValue()).setValue(e.getKey().getInt(this.settings));
+                }
+            } catch (IllegalAccessException ex) {
+                System.out.printf("Failed to reset game param %s: %s\n", e.getKey(), ex);
+            }
+        }
     }
 
     protected void reset() {
@@ -392,7 +503,9 @@ public class EditorGameState extends BasicTWLGameState {
                 this.bmpLastKeyPress = 0;
                 this.bmpMusicStart = 0;
 
+                this.settings = RhythmGameSettings.currentSettings();
                 this.music = new Music(path.getParent() + File.separator + "music.ogg");
+                this.beatmapFile = new File(path.getParent() + File.separator + "beatmap.dat");
                 this.beatmap = new Beatmap();
                 this.beatmap.totalLengthFrom(this.music);
                 this.beatmapVisualizer.beatmap = this.beatmap;
@@ -411,10 +524,13 @@ public class EditorGameState extends BasicTWLGameState {
     protected void load() {
         File path;
         if ((path = UIHelper.instance().selectFile()) != null) {
+            System.out.println("got file " + path);
             try {
+                this.beatmapFile = path;
                 this.beatmap = Beatmap.beatmapBasedOn(path.getAbsolutePath());
                 this.beatmapVisualizer.beatmap = this.beatmap;
 
+                this.settings = RhythmGameSettings.loadFromFileAt(path.getParent() + File.separator + "settings.dat");
                 this.state = 10;
                 this.music = new Music(path.getParent() + File.separator + "music.ogg");
                 this.music.play();
@@ -431,6 +547,7 @@ public class EditorGameState extends BasicTWLGameState {
         if (this.beatmapFile != null) {
             try {
                 this.beatmap.saveIn(this.beatmapFile.getAbsolutePath());
+                this.settings.saveToFileAt(this.beatmapFile.getParent() + File.separator + "settings.dat");
             } catch (Exception e) {
                 e.printStackTrace();
                 // @TODO: alert exception
@@ -438,32 +555,10 @@ public class EditorGameState extends BasicTWLGameState {
         } else {
             File path;
             if ((path = UIHelper.instance().selectFile()) != null) {
-                this.beatmapFile = new File(path + File.separator + "beatmap.dat");
+                this.beatmapFile = new File(path.getParent() + File.separator + "beatmap.dat");
                 this.save();
             }
         }
-    }
-
-    protected void calculateIntervals2() {
-        long count = 0;
-        long intervalTotal = 0;
-        long previous = 0;
-        long offset = 0;
-        for (Long beatTime : this.bpmMeterBeats) {
-            if (previous == 0) {
-                offset = beatTime - this.bmpMusicStart;
-            } else {
-                count++;
-                intervalTotal += beatTime - previous;
-            }
-
-            previous = beatTime;
-        }
-
-        this.beatmap.beatSize = (float) (intervalTotal/count) / 1000;
-        this.beatmap.beatOffset = (float) offset / 1000;
-
-        this.beatmap.createActionsArray();
     }
 
     protected void calculateIntervals() {

@@ -1,6 +1,7 @@
 package net.shdwprince.jegfaller.states;
 
 import de.matthiasmann.twl.BoxLayout;
+import de.matthiasmann.twl.Button;
 import de.matthiasmann.twl.ValueAdjusterFloat;
 import it.twl.util.BasicTWLGameState;
 import it.twl.util.RootPane;
@@ -17,7 +18,6 @@ import net.shdwprince.jegfaller.lib.ui.BeatmapVisualizer;
 import net.shdwprince.jegfaller.lib.ui.MeterVisualizer;
 import org.newdawn.slick.*;
 import org.newdawn.slick.geom.Rectangle;
-import org.newdawn.slick.openal.AudioLoader;
 import org.newdawn.slick.state.StateBasedGame;
 
 import java.io.File;
@@ -38,10 +38,11 @@ public class RhythmGameState extends BasicTWLGameState implements BodyManager.Li
 
     protected Beatmap beatmap;
     protected GameContainer gameContainer;
+    protected StateBasedGame stateBasedGame;
     protected Music music;
     protected float heat;
     protected long bodies, feverUntil;
-    protected boolean isFever;
+    protected boolean isFever, isPaused;
     protected HashMap<Integer, HitStatus> hits;
 
     protected Cart cart;
@@ -51,7 +52,7 @@ public class RhythmGameState extends BasicTWLGameState implements BodyManager.Li
 
     protected Background background;
     protected BeatmapVisualizer beatmapVisualizer;
-    protected MeterVisualizer heatVisualizer;
+    protected MeterVisualizer heatVisualizer, musicPositionVisualizer;
     protected PileSpriteFactory fireFactory;
 
     protected ShaderProgram lightingShader;
@@ -67,19 +68,34 @@ public class RhythmGameState extends BasicTWLGameState implements BodyManager.Li
     @Override
     public void init(GameContainer gc, StateBasedGame stateBasedGame) throws SlickException {
         RhythmGameSettings.instantiateDefaultSettings();
-        this.gameContainer = gc;
+        try {
+            String path = "assets/Colors.jfb/settings.dat";
+            RhythmGameSettings.setCurrentSettings(RhythmGameSettings.loadFromFileAt(path));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-        this.lightingShader =  ShaderProgram.loadProgram("assets/shader/a.vert", "assets/shader/a.frag");
+        this.gameContainer = gc;
+        this.stateBasedGame = stateBasedGame;
+
+        this.lightingShader = ShaderProgram.loadProgram("assets/shader/a.vert", "assets/shader/a.frag");
         this.lightingShader.bind();
         this.lightingShader.setUniform1i("tex0", 0); //texture 0
         this.lightingShader.unbind();
+
+        int x = gc.getWidth() / 4;
+        int width = gc.getWidth() / 2;
         this.beatmapVisualizer = new BeatmapVisualizer(new Rectangle(
+                x,
                 150,
-                150,
-                gc.getWidth() - 300,
+                width,
                 100
         ));
-        this.heatVisualizer = new MeterVisualizer(new Rectangle(150, 150, 100, 10), 100.f);
+
+        float visualizersWidth = width / 2;
+        this.heatVisualizer = new MeterVisualizer(new Rectangle(x, 150, visualizersWidth - 15, 10), 100.f);
+        this.musicPositionVisualizer = new MeterVisualizer(new Rectangle(x + visualizersWidth + 15, 150, visualizersWidth - 15, 10), 1.f);
+        this.musicPositionVisualizer.reverse = true;
         this.background = new Background(new Rectangle(0, 0, gc.getWidth(), gc.getHeight()));
         this.lastThunderHit = System.currentTimeMillis();
         this.lightingDrawable = new Lighting(new Rectangle(100, 0, 300, 500));
@@ -100,8 +116,6 @@ public class RhythmGameState extends BasicTWLGameState implements BodyManager.Li
         this.followersManager.addEntity(doctor, this.cart.getWidth() + horses.getWidth() - 30.f, -(doctor.getHeight() - this.cart.getHeight()));
         this.followersManager.addEntity(this.pile, 0, -this.pile.getHeight() - this.cart.getHeight() + 90.f, false);
         this.bodyManager = new BodyManager(this.pile, this.background, this, gc.getHeight());
-        BodyManager.SPAWN_INTERVAL = RhythmGameSettings.currentSettings().BodySpawnInterval;
-        BodyManager.DROP_INTERVAL = RhythmGameSettings.currentSettings().BodyDropInterval;
     }
 
     @Override
@@ -126,13 +140,25 @@ public class RhythmGameState extends BasicTWLGameState implements BodyManager.Li
 
         this.beatmapVisualizer.render(graphics);
         this.heatVisualizer.render(graphics);
+        this.musicPositionVisualizer.render(graphics);
 
         graphics.setColor(Color.white);
-        graphics.drawString(String.format("Count: %d", this.bodies), 254, 146);
     }
 
     @Override
     public void update(GameContainer gc, StateBasedGame stateBasedGame, int i) throws SlickException {
+        if (gc.getInput().isKeyPressed(Input.KEY_ESCAPE)) {
+            if (this.isPaused) {
+                this.resumeGame();
+            } else {
+                this.pauseGame();
+            }
+        }
+
+        if (this.isPaused) {
+            return;
+        }
+
         this.background.update();
 
         this.cart.update();
@@ -148,11 +174,10 @@ public class RhythmGameState extends BasicTWLGameState implements BodyManager.Li
         }
         if (!this.followersManager.isAnimating()) {
             this.followersManager.startAnimating();
-        } else if (this.followersManager.isAnimating()) {
-            this.followersManager.stopAnimating();
         }
 
         this.heatVisualizer.value = this.heat;
+        this.musicPositionVisualizer.value = this.music.getPosition() / this.beatmap.totalLength;
         this.beatmapVisualizer.musicPosition = this.music.getPosition();
 
         if (System.currentTimeMillis() - this.lastThunderHit > RhythmGameSettings.currentSettings().GameThunderInterval && SingleRandom.nextInt(100) < RhythmGameSettings.currentSettings().GameThunderChance) {
@@ -206,10 +231,6 @@ public class RhythmGameState extends BasicTWLGameState implements BodyManager.Li
         if (gc.getInput().isKeyPressed(Input.KEY_W)) {
             stateBasedGame.enterState(JegFaller.MAINMENU);
         }
-
-        if (gc.getInput().isKeyPressed(Input.KEY_ESCAPE)) {
-            this.getRootPane().setVisible(!this.getRootPane().isVisible());
-        }
     }
 
     @Override
@@ -220,6 +241,8 @@ public class RhythmGameState extends BasicTWLGameState implements BodyManager.Li
             this.beatmap = Beatmap.beatmapBasedOn(this.beatmapFile.getAbsolutePath());
             this.beatmapVisualizer.beatmap = this.beatmap;
             this.music = new Music(this.beatmapFile.getParent() + File.separator + "music.ogg");
+            RhythmGameSettings.setCurrentSettings(RhythmGameSettings.loadFromFileAt(this.beatmapFile.getParent() + File.separator + "settings.dat"));
+            System.out.println(RhythmGameSettings.currentSettings().BodySpawnInterval);
         } catch (Exception e) {
             e.printStackTrace();
             stateBasedGame.enterState(JegFaller.MAINMENU);
@@ -228,12 +251,17 @@ public class RhythmGameState extends BasicTWLGameState implements BodyManager.Li
 
         this.heat = RhythmGameSettings.currentSettings().GameInitialHeat;
         this.bodies = 0;
+
+        BodyManager.SPAWN_INTERVAL = RhythmGameSettings.currentSettings().BodySpawnInterval;
+        BodyManager.DROP_INTERVAL = RhythmGameSettings.currentSettings().BodyDropInterval;
         this.bodyManager.reset();
         this.followersManager.reset();
         this.pile.reset();
         this.music.play();
         this.hits = new HashMap<>();
-        this.music.setVolume(0.1f);
+
+        this.pauseGame();
+        this.resumeGame();
     }
 
     @Override
@@ -251,38 +279,87 @@ public class RhythmGameState extends BasicTWLGameState implements BodyManager.Li
     protected RootPane createRootPane() {
         RootPane p = super.createRootPane();
         p.setTheme("");
-        //p.setVisible(false);
+        p.setVisible(false);
 
         this.musicVolumeAdjuster = new ValueAdjusterFloat();
-        this.musicVolumeAdjuster.setValue(0.7f);
         this.musicVolumeAdjuster.setMinMaxValue(0, 1.f);
-        this.musicVolumeAdjuster.setFormat("Music volume: %f");
+        this.musicVolumeAdjuster.setFormat("Music volume: %.1f");
+        this.musicVolumeAdjuster.setStepSize(0.2f);
+        this.musicVolumeAdjuster.setValue(0.5f);
+
         this.effectsVolumeAdjuster = new ValueAdjusterFloat();
-        this.effectsVolumeAdjuster.setValue(1f);
         this.effectsVolumeAdjuster.setMinMaxValue(0, 1.f);
-        this.effectsVolumeAdjuster.setFormat("Effects volume: %f");
+        this.effectsVolumeAdjuster.setFormat("Effects volume: %.1f");
+        this.effectsVolumeAdjuster.setStepSize(0.2f);
+        this.effectsVolumeAdjuster.setValue(0.8f);
+
         this.hitsoundVolumeAdjuster = new ValueAdjusterFloat();
-        this.hitsoundVolumeAdjuster.setValue(1f);
         this.hitsoundVolumeAdjuster.setMinMaxValue(0, 1.f);
-        this.hitsoundVolumeAdjuster.setFormat("Hitsound volume: %f");
+        this.hitsoundVolumeAdjuster.setStepSize(0.2f);
+        this.hitsoundVolumeAdjuster.setFormat("Hitsound volume: %.1f");
+        this.hitsoundVolumeAdjuster.setValue(0.8f);
+
+        BoxLayout settings = new BoxLayout(BoxLayout.Direction.VERTICAL);
+        settings.setTheme("pane");
+        settings.add(this.musicVolumeAdjuster);
+        settings.add(this.effectsVolumeAdjuster);
+        settings.add(this.hitsoundVolumeAdjuster);
 
         BoxLayout menu = new BoxLayout(BoxLayout.Direction.VERTICAL);
-        menu.setTheme("pane");
-        menu.add(this.musicVolumeAdjuster);
-        menu.add(this.effectsVolumeAdjuster);
-        menu.add(this.hitsoundVolumeAdjuster);
-        this.boxMenu = menu;
+        Button b;
+        b = new Button("Resume");
+        b.addCallback(this::resumeGame);
+        menu.add(b);
 
+        b = new Button("Main menu");
+        b.addCallback(() -> {
+            this.stateBasedGame.enterState(JegFaller.MAINMENU);
+        });
+        menu.add(b);
+
+        b = new Button("Quit to desktop");
+        b.addCallback(this.gameContainer::exit);
+        menu.add(b);
+
+        this.boxMenu = new BoxLayout(BoxLayout.Direction.HORIZONTAL);
+        this.boxMenu.add(menu);
+        this.boxMenu.add(settings);
+        p.add(this.boxMenu);
         return p;
     }
 
     @Override
     protected void layoutRootPane() {
         super.layoutRootPane();
+
         this.boxMenu.adjustSize();
         this.boxMenu.setPosition(
                 this.gameContainer.getWidth() / 2 - this.boxMenu.getWidth() / 2,
                 this.gameContainer.getHeight() / 2 - this.boxMenu.getHeight() / 2);
+    }
+
+    protected void pauseGame() {
+        this.isPaused = true;
+
+        this.cart.getAnimation().stop();
+        this.followersManager.stopAnimating();
+        this.music.pause();
+        this.getRootPane().setVisible(true);
+    }
+
+    protected void resumeGame() {
+        this.isPaused = false;
+
+        this.cart.getAnimation().start();
+        this.followersManager.startAnimating();
+        this.music.resume();
+        this.getRootPane().setVisible(false);
+
+        this.music.setVolume(this.musicVolumeAdjuster.getValue());
+        float effectsVolume = this.effectsVolumeAdjuster.getValue();
+        this.soundSetBody.setVolume(effectsVolume);
+        this.soundSetThunder.setVolume(effectsVolume);
+        this.soundSetHit.setVolume(this.hitsoundVolumeAdjuster.getValue());
     }
 
     @Override

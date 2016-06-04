@@ -1,6 +1,7 @@
 package net.shdwprince.jegfaller.lib.ui;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 
 /**
@@ -24,11 +25,24 @@ public class UIHelper {
         return instance;
     }
 
-    public File selectFile() {
+    public File selectFile2() {
+        System.out.println("SELECT FILE INTER");
         int result = this.fileChooser.showOpenDialog(this.window);
+        System.out.println("chooser end");
         if (result == JFileChooser.APPROVE_OPTION) {
             File selectedFile = this.fileChooser.getSelectedFile();
             return selectedFile;
+        } else {
+            return null;
+        }
+    }
+
+    public File selectFile() {
+        FileDialog fd = new FileDialog(new JFrame(), "Choose a file", FileDialog.LOAD);
+        fd.setVisible(true);
+        String filename = fd.getFile();
+        if (filename != null) {
+            return new File(fd.getDirectory() + filename);
         } else {
             return null;
         }

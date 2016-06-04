@@ -5,37 +5,34 @@ import net.shdwprince.jegfaller.lib.entities.EntityManager;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.SlickException;
 
+import java.util.HashMap;
 import java.util.Vector;
 
 /**
  * Created by sp on 5/29/16.
  */
 public class FollowersManager extends EntityManager {
-    public class Follower extends Entity {
-        protected Entity entity;
+    public class Follower {
+        protected float x, y;
         protected boolean shouldDraw;
-
-        public Follower() throws SlickException {
-            super(new String [] {}, 1);
-        }
     }
 
+    protected Vector<Follower> followers;
     public float followX, followY;
 
     public FollowersManager() {
+        super();
+
+        this.followers = new Vector<>();
     }
 
     public void addEntity(Entity ent, float offsetX, float offsetY, boolean draw) {
-        try {
-            Follower follower = new Follower();
-            follower.entity = ent;
-            follower.setX(offsetX);
-            follower.setY(offsetY);
-            follower.shouldDraw = draw;
-            this.addEntity(follower);
-        } catch (SlickException e) {
-            e.printStackTrace();
-        }
+        Follower follower = new Follower();
+        follower.x = offsetX;
+        follower.y = offsetY;
+        follower.shouldDraw = draw;
+        this.followers.add(follower);
+        this.addEntity(ent);
     }
 
     public void addEntity(Entity ent, float oX, float oY) {
@@ -43,22 +40,33 @@ public class FollowersManager extends EntityManager {
     }
 
     @Override
+    public void destroyEntity(Entity s) {
+        int idx = this.entities.indexOf(s);
+        this.followers.removeElementAt(idx);
+        super.destroyEntity(s);
+    }
+
+    @Override
     public void update() throws SlickException {
         super.update();
 
-        for (Entity f : this.iter()) {
-            ((Follower) f).entity.setX(this.followX + f.getX());
-            ((Follower) f).entity.setY(this.followY + f.getY());
+        for (int i = 0; i < this.followers.size(); i++) {
+            Entity e = this.entities.elementAt(i);
+            Follower f = this.followers.elementAt(i);
+
+            e.setX(this.followX + f.x);
+            e.setY(this.followY + f.y);
         }
     }
 
     @Override
     public void draw(Graphics graphics) {
-        for (Entity e : this.iter()) {
-            Follower f = (Follower) e;
+        for (int i = 0; i < this.followers.size(); i++) {
+            Entity e = this.entities.elementAt(i);
+            Follower f = this.followers.elementAt(i);
 
             if (f.shouldDraw) {
-                f.entity.draw(graphics);
+                e.draw(graphics);
             }
         }
     }

@@ -10,7 +10,7 @@ import org.newdawn.slick.geom.Rectangle;
 public class MeterVisualizer {
     public Rectangle position;
     public float value, maxValue;
-    public boolean fill;
+    public boolean fill, reverse;
 
 
     public MeterVisualizer(Rectangle position, float maxValue) {
@@ -25,13 +25,19 @@ public class MeterVisualizer {
         }
 
         float fillWidth = position.getWidth() * fillPercent;
-        Color color = new Color(fillPercent + 0.3f, fillPercent + 0.3f, fillPercent+0.3f);
+        float width = fillWidth < position.getWidth() ? fillWidth : position.getWidth();
+
+        Color color = new Color(fillPercent + 0.5f, fillPercent + 0.5f, fillPercent+0.5f);
         if (fillPercent == 1) {
             color = Color.red;
         }
         g.setColor(color);
-        g.fillRect(position.getX(), position.getY(), fillWidth < position.getWidth() ? fillWidth : position.getWidth(), position.getHeight());
-        g.setColor(Color.white);
-        g.drawRect(position.getX(), position.getY(), position.getWidth(), position.getHeight());
+        if (this.reverse) {
+            g.fillRect(position.getX() + position.getWidth() - width, position.getY(), width, position.getHeight());
+        } else {
+            g.fillRect(position.getX(), position.getY(), width, position.getHeight());
+        }
+        //g.setColor(Color.white);
+        //g.drawRect(position.getX(), position.getY(), position.getWidth(), position.getHeight());
     }
 }
