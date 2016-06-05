@@ -8,6 +8,7 @@ import it.twl.util.RootPane;
 import net.shdwprince.jegfaller.JegFaller;
 import net.shdwprince.jegfaller.game.*;
 import net.shdwprince.jegfaller.lib.entities.Lighting;
+import net.shdwprince.jegfaller.lib.rhythm.RhythmInput;
 import net.shdwprince.jegfaller.lib.sound.SoundSet;
 import net.shdwprince.jegfaller.lib.ui.Background;
 import net.shdwprince.jegfaller.lib.util.ShaderProgram;
@@ -36,6 +37,7 @@ public class RhythmGameState extends BasicTWLGameState implements BodyManager.Li
 
     public File beatmapFile;
 
+    protected RhythmInput input;
     protected Beatmap beatmap;
     protected GameContainer gameContainer;
     protected StateBasedGame stateBasedGame;
@@ -77,6 +79,7 @@ public class RhythmGameState extends BasicTWLGameState implements BodyManager.Li
 
         this.gameContainer = gc;
         this.stateBasedGame = stateBasedGame;
+        this.input = new RhythmInput(gc.getInput());
 
         this.lightingShader = ShaderProgram.loadProgram("assets/shader/a.vert", "assets/shader/a.frag");
         this.lightingShader.bind();
@@ -201,7 +204,8 @@ public class RhythmGameState extends BasicTWLGameState implements BodyManager.Li
         this.heat -= RhythmGameSettings.currentSettings().GameHeatDrain;
         this.heat = this.heat < 0 ? 0.f : this.heat;
 
-        if (gc.getInput().isKeyPressed(Input.KEY_SPACE)) {
+        this.input.update();
+        if (this.input.wasKeysPressed(Input.KEY_SPACE)) {
             Beatmap.Hit hit = this.beatmap.closestHitFrom(this.music.getPosition());
 
             if (this.hitStatus(hit) == HitStatus.Missed) {
@@ -211,14 +215,22 @@ public class RhythmGameState extends BasicTWLGameState implements BodyManager.Li
             }
         }
 
-        if (gc.getInput().isKeyPressed(Input.KEY_K)) {
+        if (this.input.wasKeysPressed(Input.KEY_UP, Input.KEY_LEFT)) {
+            this.performAction(8);
+        } else if (this.input.wasKeysPressed(Input.KEY_UP, Input.KEY_RIGHT)) {
             this.performAction(2);
-        } else if (gc.getInput().isKeyPressed(Input.KEY_J)) {
-            this.performAction(3);
-        } else if (gc.getInput().isKeyPressed(Input.KEY_I)) {
-            this.performAction(1);
-        } else if (gc.getInput().isKeyPressed(Input.KEY_L)) {
+        } else if (this.input.wasKeysPressed(Input.KEY_DOWN, Input.KEY_LEFT)) {
+            this.performAction(6);
+        } else if (this.input.wasKeysPressed(Input.KEY_DOWN, Input.KEY_RIGHT)) {
             this.performAction(4);
+        } else if (this.input.wasKeysPressed(Input.KEY_UP)) {
+            this.performAction(1);
+        } else if (this.input.wasKeysPressed(Input.KEY_DOWN)) {
+            this.performAction(5);
+        } else if (this.input.wasKeysPressed(Input.KEY_LEFT)) {
+            this.performAction(7);
+        } else if (this.input.wasKeysPressed(Input.KEY_RIGHT)) {
+            this.performAction(3);
         }
 
         if (gc.getInput().isKeyPressed(Input.KEY_COMMA)) {
@@ -254,6 +266,7 @@ public class RhythmGameState extends BasicTWLGameState implements BodyManager.Li
 
         BodyManager.SPAWN_INTERVAL = RhythmGameSettings.currentSettings().BodySpawnInterval;
         BodyManager.DROP_INTERVAL = RhythmGameSettings.currentSettings().BodyDropInterval;
+        this.beatmapVisualizer.reset();
         this.bodyManager.reset();
         this.followersManager.reset();
         this.pile.reset();
@@ -446,7 +459,7 @@ public class RhythmGameState extends BasicTWLGameState implements BodyManager.Li
         BodyManager.SPAWN_INTERVAL = RhythmGameSettings.currentSettings().BodyFeverSpawnInterval;
         this.heatVisualizer.fill = true;
 
-        float height = Math.max(this.pile.box().getHeight(), this.fireFactory.maxSpriteHeight());
+        float height = Math.max(this.pile.box().getHeight() + 35.f, this.fireFactory.maxSpriteHeight());
 
         Entity fires = this.fireFactory.pileSpriteWithSize(this.pile.getWidth(), height);
         this.followersManager.addEntity(

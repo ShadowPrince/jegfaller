@@ -3,6 +3,8 @@ package net.shdwprince.jegfaller.lib.ui;
 import net.shdwprince.jegfaller.lib.rhythm.Beatmap;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Image;
+import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Rectangle;
 import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 
@@ -19,9 +21,20 @@ public class BeatmapVisualizer {
     public Rectangle position;
     public HashMap<Integer, Color> actionColorOverride;
 
-    public BeatmapVisualizer(Rectangle position) {
+    protected Image[] actionImages;
+
+    public BeatmapVisualizer(Rectangle position) throws SlickException {
         this();
         this.position = position;
+
+        this.actionImages = new Image[9];
+        Image arrow = new Image("assets/arrow.png");
+        for (int i = 1; i <= 8; i++) {
+            Image rotatedArrow = arrow.copy();
+            rotatedArrow.setRotation((i - 1) * (float) 1 / 8);
+            rotatedArrow.setRotation((i - 1) * 45.f);
+            this.actionImages[i] = rotatedArrow;
+        }
     }
 
     public BeatmapVisualizer() {
@@ -66,7 +79,9 @@ public class BeatmapVisualizer {
 
                     String actionStr = this.beatmap.stringNameOfAction(action);
 
-                    graphics.drawString(actionStr, x - graphics.getFont().getWidth(actionStr) / 2, this.position.getCenterY() - graphics.getFont().getLineHeight() / 2);
+                    Image actionImage = this.actionImages[action];
+                    graphics.drawImage(actionImage, x - actionImage.getWidth() / 2, this.position.getCenterY() - actionImage.getHeight() / 2);
+                    //graphics.drawString(actionStr, x - graphics.getFont().getWidth(actionStr) / 2, this.position.getCenterY() - graphics.getFont().getLineHeight() / 2);
                 }
             }
         }
@@ -87,5 +102,9 @@ public class BeatmapVisualizer {
 
     public void overrideActionColor(int idx, Color c) {
         this.actionColorOverride.put(new Integer(idx), c);
+    }
+
+    public void reset() {
+        this.actionColorOverride = new HashMap<>();
     }
 }

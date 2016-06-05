@@ -19,7 +19,7 @@ public class RhythmGameSettings {
     public int GameThunderInterval = 15000, GameThunderChance = 5, GameThunderDuration = 350 + 250;
     public float GameHitOkInterval = 0.15f, GameHitGoodInterval = 0.08f, GameHitExcellentInterval = 0.03f;
     public float GameHitOkHeat = 1.f, GameHitGoodHeat = 1.5f, GameHitExcellentHeat = 3.f,GameHitMissHeat = -1.f;
-    public float GameHeatDrain = 0.01f, GameInitialHeat = 50f, GameFeverHeat = 100.f;
+    public float GameHeatDrain = 0.001f, GameInitialHeat = 50f, GameFeverHeat = 100.f;
     public int GameFeverDuration = 10000;
 
     private static RhythmGameSettings currentSettings;

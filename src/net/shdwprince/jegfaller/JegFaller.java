@@ -4,7 +4,6 @@ import it.twl.util.TWLStateBasedGame;
 import net.shdwprince.jegfaller.states.EditorGameState;
 import net.shdwprince.jegfaller.states.RhythmGameState;
 import net.shdwprince.jegfaller.states.MenuState;
-import net.shdwprince.jegfaller.states.TWLState;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.state.StateBasedGame;
@@ -40,6 +39,7 @@ public class JegFaller extends TWLStateBasedGame {
         this.addState(new RhythmGameState());
         this.addState(new EditorGameState());
 
+        //this.enterState(EDITOR);
         /*
         ((RhythmGameState) this.getState(RHYTHMGAME)).beatmapFile = new File("assets/Colors.jfb/beatmap.dat");
         this.enterState(RHYTHMGAME);

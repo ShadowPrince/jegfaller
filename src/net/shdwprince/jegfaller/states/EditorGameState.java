@@ -7,6 +7,7 @@ import it.twl.util.RootPane;
 import net.shdwprince.jegfaller.JegFaller;
 import net.shdwprince.jegfaller.game.RhythmGameSettings;
 import net.shdwprince.jegfaller.lib.rhythm.Beatmap;
+import net.shdwprince.jegfaller.lib.rhythm.RhythmInput;
 import net.shdwprince.jegfaller.lib.ui.BeatmapVisualizer;
 import net.shdwprince.jegfaller.lib.ui.MusicProgressVisualizer;
 import net.shdwprince.jegfaller.lib.ui.UIHelper;
@@ -27,6 +28,7 @@ import java.util.Vector;
  */
 public class EditorGameState extends BasicTWLGameState {
     protected StateBasedGame game;
+    protected RhythmInput input;
     protected Image background;
     protected BeatmapVisualizer beatmapVisualizer;
 
@@ -49,6 +51,7 @@ public class EditorGameState extends BasicTWLGameState {
     @Override
     public void init(GameContainer gameContainer, StateBasedGame stateBasedGame) throws SlickException {
         this.game = stateBasedGame;
+        this.input = new RhythmInput(gameContainer.getInput());
         RhythmGameSettings.instantiateDefaultSettings();
         this.settings = RhythmGameSettings.currentSettings();
 
@@ -62,6 +65,7 @@ public class EditorGameState extends BasicTWLGameState {
     public void render(GameContainer gameContainer, StateBasedGame stateBasedGame, Graphics graphics) throws SlickException {
         graphics.drawImage(this.background, 0, 0);
         graphics.setColor(Color.white);
+        graphics.drawString(this.input.debug(), 0, 500);
 
         if (this.state == 1 && this.bmpLastKeyPress > 0) {
             long delta = (System.currentTimeMillis() - this.bmpLastKeyPress) / 3;
@@ -75,6 +79,8 @@ public class EditorGameState extends BasicTWLGameState {
 
     @Override
     public void update(GameContainer gameContainer, StateBasedGame stateBasedGame, int skip) throws SlickException {
+        this.input.update();
+
         Input i = gameContainer.getInput();
         if (this.getRootPane() != null)
             this.updateUI();
@@ -104,24 +110,35 @@ public class EditorGameState extends BasicTWLGameState {
                     this.beatmapVisualizer.musicPosition = this.musicPosition;
                 }
 
-                if (i.isKeyPressed(Input.KEY_SPACE)) {
-                    this.playpause();
-                } else if (i.isKeyPressed(Input.KEY_A)) {
+                if (i.isKeyPressed(Input.KEY_A)) {
                     this.seekBackward();
                 } else if (i.isKeyPressed(Input.KEY_D)) {
                     this.seekForward();
-                } else if (i.isKeyPressed(Input.KEY_UP)) {
-                    this.insertAction(1);
-                } else if (i.isKeyPressed(Input.KEY_DOWN)) {
-                    this.insertAction(2);
-                } else if (i.isKeyPressed(Input.KEY_LEFT)) {
-                    this.insertAction(3);
-                } else if (i.isKeyPressed(Input.KEY_RIGHT)) {
-                    this.insertAction(4);
-                } if (i.isKeyPressed(Input.KEY_BACK)) {
+                } else if (i.isKeyPressed(Input.KEY_BACK)) {
                     this.removeAction();
                 }
 
+                if (this.input.wasKeysPressed(Input.KEY_SPACE)) {
+                    this.playpause();
+                }
+
+                if (this.input.wasKeysPressed(Input.KEY_UP, Input.KEY_LEFT)) {
+                    this.insertAction(8);
+                } else if (this.input.wasKeysPressed(Input.KEY_UP, Input.KEY_RIGHT)) {
+                    this.insertAction(2);
+                } else if (this.input.wasKeysPressed(Input.KEY_DOWN, Input.KEY_LEFT)) {
+                    this.insertAction(6);
+                } else if (this.input.wasKeysPressed(Input.KEY_DOWN, Input.KEY_RIGHT)) {
+                    this.insertAction(4);
+                } else if (this.input.wasKeysPressed(Input.KEY_UP)) {
+                    this.insertAction(1);
+                } else if (this.input.wasKeysPressed(Input.KEY_DOWN)) {
+                    this.insertAction(5);
+                } else if (this.input.wasKeysPressed(Input.KEY_LEFT)) {
+                    this.insertAction(7);
+                } else if (this.input.wasKeysPressed(Input.KEY_RIGHT)) {
+                    this.insertAction(3);
+                }
                 break;
         }
     }
@@ -377,6 +394,7 @@ public class EditorGameState extends BasicTWLGameState {
                 if (f.getType() == float.class) {
                     ValueAdjusterFloat a = new ValueAdjusterFloat();
                     a.setMinMaxValue(-10000.f, 10000.f);
+                    a.setFormat("%.5f");
                     a.setValue(f.getFloat(this.settings));
 
                     adjuster = a;
