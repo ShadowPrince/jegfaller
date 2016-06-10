@@ -70,18 +70,7 @@ public class BeatmapVisualizer {
                         color = Color.white;
                     }
 
-                    color = new Color(color.r, color.g, color.b, 0.8f);
-                    graphics.setColor(color);
-                    graphics.fillArc(x - halfsize, this.position.getCenterY() - halfsize, halfsize * 2, halfsize * 2, 0, 360);
-                    graphics.setColor(Color.white);
-                    graphics.drawArc(x - halfsize, this.position.getCenterY() - halfsize, halfsize * 2, halfsize * 2, 0, 360);
-                    graphics.setColor(Color.black);
-
-                    String actionStr = this.beatmap.stringNameOfAction(action);
-
-                    Image actionImage = this.actionImages[action];
-                    graphics.drawImage(actionImage, x - actionImage.getWidth() / 2, this.position.getCenterY() - actionImage.getHeight() / 2);
-                    //graphics.drawString(actionStr, x - graphics.getFont().getWidth(actionStr) / 2, this.position.getCenterY() - graphics.getFont().getLineHeight() / 2);
+                    this.drawActionAt(graphics, action, new Color(color.r, color.g, color.b, 0.8f), halfsize, x, this.position.getCenterY());
                 }
             }
         }
@@ -98,6 +87,17 @@ public class BeatmapVisualizer {
                 width,
                 this.position.getHeight()
         );
+    }
+
+    public void drawActionAt(Graphics graphics, int action, Color c, float halfsize, float x, float y) {
+        graphics.setColor(c);
+        graphics.fillArc(x - halfsize, y - halfsize, halfsize * 2, halfsize * 2, 0, 360);
+        graphics.setColor(Color.white);
+        graphics.drawArc(x - halfsize, y - halfsize, halfsize * 2, halfsize * 2, 0, 360);
+        graphics.setColor(Color.black);
+
+        Image actionImage = this.actionImages[action];
+        graphics.drawImage(actionImage, x - actionImage.getWidth() / 2, y - actionImage.getHeight() / 2);
     }
 
     public void overrideActionColor(int idx, Color c) {

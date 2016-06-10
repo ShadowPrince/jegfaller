@@ -65,7 +65,6 @@ public class EditorGameState extends BasicTWLGameState {
     public void render(GameContainer gameContainer, StateBasedGame stateBasedGame, Graphics graphics) throws SlickException {
         graphics.drawImage(this.background, 0, 0);
         graphics.setColor(Color.white);
-        graphics.drawString(this.input.debug(), 0, 500);
 
         if (this.state == 1 && this.bmpLastKeyPress > 0) {
             long delta = (System.currentTimeMillis() - this.bmpLastKeyPress) / 3;
@@ -87,14 +86,14 @@ public class EditorGameState extends BasicTWLGameState {
 
         switch (this.state) {
             case 0:
-                if (i.isKeyPressed(Input.KEY_SPACE)) {
+                if (this.input.wasKeysPressed(Input.KEY_SPACE)) {
                     this.state = 1;
                     this.music.play();
                     this.bmpMusicStart = System.currentTimeMillis();
                 }
                 break;
             case 1:
-                if (i.isKeyPressed(Input.KEY_SPACE)) {
+                if (this.input.wasKeysPressed(Input.KEY_SPACE)) {
                     this.bmpLastKeyPress = System.currentTimeMillis();
                     this.bpmMeterBeats.add(System.currentTimeMillis());
                 }

@@ -28,7 +28,7 @@ import java.util.HashMap;
  * Created by sp on 5/27/16.
  */
 public class RhythmGameState extends BasicTWLGameState implements BodyManager.Listener {
-    private static enum HitStatus {
+    public static enum HitStatus {
         Excellent,
         Good,
         Ok,
@@ -70,12 +70,6 @@ public class RhythmGameState extends BasicTWLGameState implements BodyManager.Li
     @Override
     public void init(GameContainer gc, StateBasedGame stateBasedGame) throws SlickException {
         RhythmGameSettings.instantiateDefaultSettings();
-        try {
-            String path = "assets/Colors.jfb/settings.dat";
-            RhythmGameSettings.setCurrentSettings(RhythmGameSettings.loadFromFileAt(path));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
         this.gameContainer = gc;
         this.stateBasedGame = stateBasedGame;
@@ -233,15 +227,12 @@ public class RhythmGameState extends BasicTWLGameState implements BodyManager.Li
             this.performAction(3);
         }
 
-        if (gc.getInput().isKeyPressed(Input.KEY_COMMA)) {
-            this.performHeatHit();
-        }
-        if (gc.getInput().isKeyPressed(Input.KEY_M)) {
-            this.bodyCollision(null);
-        }
+        if (gc.getInput().isKeyPressed(Input.KEY_F) || this.music.getPosition() >= this.beatmap.totalLength) {
+            RhythmGameResultsState state = (RhythmGameResultsState) this.stateBasedGame.getState(JegFaller.GAMERESULTS);
+            state.bodies = this.bodies;
+            state.hits = this.hits;
 
-        if (gc.getInput().isKeyPressed(Input.KEY_W)) {
-            stateBasedGame.enterState(JegFaller.MAINMENU);
+            this.stateBasedGame.enterState(JegFaller.GAMERESULTS);
         }
     }
 

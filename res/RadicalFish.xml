@@ -951,6 +951,13 @@
         </theme>
     </theme>
 
+    <theme name="resultsPane" ref="statusbar">
+        <param name="spacing"><int>20</int></param>
+        <theme name="button" ref="button">
+            <param name="border"><border>10,10,10,10</border></param>
+        </theme>
+    </theme>
+
     <theme name="songprogress" ref="progressbar">
         <param name="minWidth"><int>300</int></param>
     </theme>

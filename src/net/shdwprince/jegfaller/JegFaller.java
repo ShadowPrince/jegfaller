@@ -2,6 +2,7 @@ package net.shdwprince.jegfaller;
 
 import it.twl.util.TWLStateBasedGame;
 import net.shdwprince.jegfaller.states.EditorGameState;
+import net.shdwprince.jegfaller.states.RhythmGameResultsState;
 import net.shdwprince.jegfaller.states.RhythmGameState;
 import net.shdwprince.jegfaller.states.MenuState;
 import org.newdawn.slick.GameContainer;
@@ -17,6 +18,7 @@ import java.net.URL;
 public class JegFaller extends TWLStateBasedGame {
     public static final int MAINMENU = 0;
     public static final int RHYTHMGAME = 1;
+    public static final int GAMERESULTS = 2;
     public static final int EDITOR = 99;
 
     public JegFaller(String name) {
@@ -26,9 +28,8 @@ public class JegFaller extends TWLStateBasedGame {
     @Override
     protected URL getThemeURL() {
         try {
-            return getClass().getResource("/res/RadicalFish.xml");
-            //
-            // return new File("res/RadicalFish.xml").toURL();
+            //return getClass().getResource("/res/RadicalFish.xml");
+            return new File("res/RadicalFish.xml").toURL();
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -40,7 +41,9 @@ public class JegFaller extends TWLStateBasedGame {
         this.addState(new MenuState());
         this.addState(new RhythmGameState());
         this.addState(new EditorGameState());
+        this.addState(new RhythmGameResultsState());
 
+        //this.enterState(GAMERESULTS);
         //this.enterState(EDITOR);
         /*
         ((RhythmGameState) this.getState(RHYTHMGAME)).beatmapFile = new File("assets/Colors.jfb/beatmap.dat");

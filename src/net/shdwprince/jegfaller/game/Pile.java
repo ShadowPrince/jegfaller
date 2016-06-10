@@ -12,6 +12,8 @@ import java.util.Random;
  * Created by sp on 5/29/16.
  */
 public class Pile extends Entity {
+    public float incrementalMargin = 10.f;
+
     protected Image bodyImage;
     protected Image pileImage;
     protected Rectangle size;
@@ -28,7 +30,7 @@ public class Pile extends Entity {
     }
 
     public void addBody() throws SlickException {
-        float minOffset = (bodyOffsetY/this.bodyImage.getHeight()+1) * 3.f;
+        float minOffset = (bodyOffsetY/this.bodyImage.getHeight()+1) * this.incrementalMargin;
         float maxOffset = this.size.getWidth() - minOffset;
 
         if (this.bodyOffsetX + this.bodyImage.getWidth() > maxOffset) {
