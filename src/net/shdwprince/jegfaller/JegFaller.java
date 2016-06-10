@@ -26,7 +26,9 @@ public class JegFaller extends TWLStateBasedGame {
     @Override
     protected URL getThemeURL() {
         try {
-            return new File("res/RadicalFish.xml").toURL();
+            return getClass().getResource("/res/RadicalFish.xml");
+            //
+            // return new File("res/RadicalFish.xml").toURL();
         } catch (Exception e) {
             e.printStackTrace();
             return null;
