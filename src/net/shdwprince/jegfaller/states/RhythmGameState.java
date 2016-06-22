@@ -135,6 +135,14 @@ public class RhythmGameState extends BasicTWLGameState implements BodyManager.Li
             this.lightingShader.unbind();
         }
 
+        /*
+        for (Rectangle r : this.background.getHousesRectangles()) {
+            graphics.setColor(Color.red);
+            if (r.getX() > 400.f && r.getX() < 1024.f - 400.f)
+            graphics.draw(r);
+        }
+        */
+
         this.beatmapVisualizer.render(graphics);
         this.heatVisualizer.render(graphics);
         this.musicPositionVisualizer.render(graphics);

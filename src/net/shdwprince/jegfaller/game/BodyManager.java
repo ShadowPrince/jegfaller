@@ -58,17 +58,19 @@ public class BodyManager extends EntityManager {
         if (System.currentTimeMillis() - this.lastSpawn > BodyManager.SPAWN_INTERVAL) {
             Vector<Rectangle> rectangles = new Vector<>();
             for (Rectangle r : this.background.getHousesRectangles()) {
-                if (r.getWidth() > 450.f) {
+                if (r.getX() > 400.f && r.getX() < 1024.f - 400.f) {
                     rectangles.add(r);
                 }
             }
 
-            Rectangle targetRect = rectangles.elementAt(random.nextInt(rectangles.size()));
-            int margin = 45;
-            this.spawnAlert(
-                    random.nextInt((int) targetRect.getWidth() - margin) + targetRect.getX() + margin,
-                    random.nextInt((int) targetRect.getHeight() / 2) + targetRect.getY() + margin
-            );
+            if (rectangles.size() > 0) {
+                Rectangle targetRect = rectangles.elementAt(random.nextInt(rectangles.size()));
+                int margin = 45;
+                this.spawnAlert(
+                        random.nextInt((int) targetRect.getWidth() - margin) + targetRect.getX() + margin,
+                        random.nextInt((int) targetRect.getHeight() / 2) + targetRect.getY() + margin
+                );
+            }
 
             this.lastSpawn = System.currentTimeMillis();
         }

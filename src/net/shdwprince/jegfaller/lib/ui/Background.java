@@ -33,11 +33,14 @@ public class Background {
         this.background = new Image("assets/bg.png");
         this.pavement = new Image("assets/pavement.png");
         this.houseImages = new Image[] {
+                new Image("assets/house4.png"),
+                new Image("assets/house2.png"),
+                new Image("assets/house3.png"),
                 new Image("assets/house1.png"),
                 new Image("assets/house2.png"),
+                new Image("assets/house4.png"),
                 new Image("assets/house1.png"),
-                new Image("assets/house2.png"),
-
+                new Image("assets/house3.png"),
         };
         this.housePositions = new float[this.houseImages.length][2];
         for (int i = 0; i < this.housePositions.length; i++) {
